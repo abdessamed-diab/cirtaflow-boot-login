@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>dz.cirtaflow</groupId>
+    <artifactId>cirtaflow-boot-login</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <name>cirtaflow-boot-login</name>
+    <packaging>jar</packaging>
+
+    <!--contributors -->
+    <contributors>
+        <contributor>
+            <name>DIAB ABDESSAMED</name>
+            <roles>
+                <role>developer</role>
+            </roles>
+            <email>abdou_gl@live.fr</email>
+            <organization>cirtaflow</organization>
+        </contributor>
+    </contributors>
+    <developers>
+        <developer>
+            <name>DIAB ABDESSAMED</name>
+            <email>abdou_gl@live.fr</email>
+            <roles><role>full stack developer</role></roles>
+        </developer>
+    </developers>
+
+    <!--properties -->
+    <properties>
+        <activiti-engine-version>6.0.0-RELEASE</activiti-engine-version>
+        <spring-boot-starter-version>2.0.0.M7</spring-boot-starter-version>
+        <skip-tests>true</skip-tests>
+        <flyway-skip>false</flyway-skip>
+        <schema-name>dev</schema-name>
+    </properties>
+
+    <!--profiles -->
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <properties>
+                <source.folder>src/main/java/dz/cirtaflow</source.folder>
+                <welcome-file>user/index</welcome-file>
+                <flyway-locations>db/migration/update/mysql</flyway-locations>
+                <flyway-user>root</flyway-user>
+                <flyway-password>cirtaflow25</flyway-password>
+            </properties>
+        </profile>
+        <profile>
+            <id>cloud</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <source.folder>src/main/java/dz/cirtaflow</source.folder>
+                <welcome-file>user/index</welcome-file>
+                <flyway-locations>db/migration/update/mysql</flyway-locations>
+                <flyway-user>root</flyway-user>
+                <flyway-password>cirtaflow25</flyway-password>
+            </properties>
+        </profile>
+    </profiles>
+
+    <!--parent POM-->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>2.0.0.M7</version>
+        <relativePath /> <!--lookup parent from local repository first-->
+    </parent>
+
+    <!--dependencies -->
+    <dependencies>
+
+        <!--boot starters -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-jdbc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-rest</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!--devtools -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <!--activiti engine -->
+        <dependency>
+            <groupId>org.activiti</groupId>
+            <artifactId>activiti-engine</artifactId>
+            <version>6.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.activiti</groupId>
+            <artifactId>activiti-spring</artifactId>
+            <version>6.0.0</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <!--mysql driver -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+            <version>5.2.8.Final</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <!--test-->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.1.0-M1</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.0.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>5.0.1.RELEASE</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-test</artifactId>
+            <version>5.0.0.RC1</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.16.16</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>RELEASE</version>
+        </dependency>
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+
+        </dependencies>
+    </dependencyManagement>
+
+    <!--repositories -->
+    <repositories>
+
+        <repository>
+            <id>spring-snapshots</id>
+            <name>spring snapshot repository</name>
+            <url>http://repo.spring.io/snapshot</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+
+        <repository>
+            <id>spring-milestones</id>
+            <name>spring milestone repository</name>
+            <url>http://repo.spring.io/milestone</url>
+        </repository>
+
+        <repository>
+            <id>alfresco-public</id>
+            <url>https://artifacts.alfresco.com/nexus/content/groups/public</url>
+        </repository>
+
+    </repositories>
+
+    <!--plugin repositories -->
+    <pluginRepositories>
+
+        <pluginRepository>
+            <id>spring-snapshots</id>
+            <url>http://repo.spring.io/snapshot</url>
+        </pluginRepository>
+
+        <pluginRepository>
+            <id>spring-milestones</id>
+            <url>http://repo.spring.io/milestone</url>
+        </pluginRepository>
+
+    </pluginRepositories>
+
+    <!--plugins -->
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludeDevtools>false</excludeDevtools>
+                </configuration>
+            </plugin>
+            <!--test purposes as Junit || testNG-->
+            <plugin>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.19.1</version>
+                <configuration>
+                    <skip>${skip-tests}</skip>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                    <properties>
+                        <excludeTags>slow</excludeTags>
+                    </properties>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.junit.platform</groupId>
+                        <artifactId>junit-platform-surefire-provider</artifactId>
+                        <version>1.0.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <plugin>
+                <groupId>org.flywaydb</groupId>
+                <artifactId>flyway-maven-plugin</artifactId>
+                <version>5.0.2</version>
+                <configuration>
+                    <url>jdbc:mysql://localhost:3306/dev</url>
+                    <user>${flyway-user}</user>
+                    <password>${flyway-password}</password>
+                    <baselineOnMigrate>true</baselineOnMigrate>
+                    <locations>${flyway-locations}</locations>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>flyway migrate</id>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>migrate</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${flyway-skip}</skip>
+                            <schemas>
+                                <schema>${schema-name}</schema>
+                            </schemas>
+                            <baselineOnMigrate>true</baselineOnMigrate>
+                            <locations>${flyway-locations}</locations>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+
+
+
+</project>

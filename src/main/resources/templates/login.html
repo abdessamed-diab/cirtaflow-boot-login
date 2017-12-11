@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" type="text/css" href="../assets/css/defaultLogin.css" />
+    <link rel="stylesheet" type="text/css" href="../assets/css/responsive.css" />
+    <link href="../assets/img/favicon.ico" rel="icon" type="image/x-icon" />
+    <title>LOGIN</title>
+</head>
+<body bgcolor="#222">
+
+    <div id="login-toolbar" class="row">
+        <div class="col-9 col-m-8 col-t-9" ></div>
+        <div id="popup" class="col-2 col-m-3 col-t-2">
+
+        </div>
+        <div class="col-1 col-m-2 col-t-1" ></div>
+    </div>
+
+    <div class="row">
+        <div class="col-4 col-m-8 col-t-4" id="top">
+                <span>
+                    <img id="hd_logo" src="../assets/img/hd-logo-min.png" width="128" height="128">
+                </span>
+            <span>
+                    <h1 class="h1-heading">DIAB ABDESSAMED</h1>
+                </span>
+        </div>
+    </div>
+
+    <div id="div-login-form">
+
+        <form action="/index" method="post"  autocomplete="off" th:action="@{/index}"
+              enctype="application/x-www-form-urlencoded">
+
+            <div class="row" >
+                <div class="col-5 col-t-3 col-m-2"></div>
+                <div class="col-2 col-t-6 col-m-8">
+                    <input id="username"
+                           name="EMAIL_"
+                           class="ui-input-text"
+                           type="text"
+                           maxlength="36"
+                           placeholder="username"
+                           required="true"
+                           minlength="6"
+                           title="please enter your username"
+                    />
+                </div>
+                <div class="col-5 col-t-3 col-m-2"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-5 col-t-3 col-m-2"></div>
+                <div class="col-2 col-t-6 col-m-8" >
+                    <input id="password"
+                           name="PWD_"
+                           class="ui-input-text"
+                           type="password"
+                           maxlength="30"
+                           placeholder="password"
+                           required="true"
+                           minlength="6"
+                           title="enter the password"
+                    />
+                </div>
+                <div class="col-5 col-t-3 col-m-2"></div>
+            </div>
+
+            <div class="row">
+                <div class="col-5 col-t-3 col-m-2"></div>
+                <div class="col-2 col-t-6 col-m-8" >
+                    <input id="submit" name="submit" type="submit" class="ui-button ui-button-green btn"
+                           value="LOGIN"/>
+                </div>
+                <div class="col-5 col-t-3 col-m-2"></div>
+            </div>
+
+        </form>
+
+        <form action="/facebook/email,user_about_me" method="get" autocomplete="off">
+
+            <div class="row" >
+                <div class="col-5 col-t-3 col-m-2"></div>
+                <div class="col-2 col-t-6 col-m-8">
+                    <input id="facebook" type="submit" class="ui-button ui-button-blue btn"
+                           value="LOGIN with Facebook"  />
+                </div>
+                <div class="col-5 col-t-3 col-m-2"></div>
+            </div>
+
+        </form>
+        <div id="comment-box">
+
+        </div>
+    </div>
+
+</body>
+</html>

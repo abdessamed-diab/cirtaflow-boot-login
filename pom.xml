@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dz.cirtaflow</groupId>
     <artifactId>cirtaflow-boot-login</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <name>cirtaflow-boot-login</name>
     <packaging>jar</packaging>
 
@@ -46,9 +46,10 @@
                 <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
+                <profile-name>dev</profile-name>
                 <source.folder>src/main/java/dz/cirtaflow</source.folder>
                 <welcome-file>user/index</welcome-file>
-                <flyway-locations>db/migration/update/mysql</flyway-locations>
+                <flyway-locations>classpath:db/migration/update/mysql</flyway-locations>
                 <flyway-user>root</flyway-user>
                 <flyway-password>cirtaflow25</flyway-password>
             </properties>
@@ -59,9 +60,14 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
+                <profile-name>cloud</profile-name>
                 <source.folder>src/main/java/dz/cirtaflow</source.folder>
                 <welcome-file>user/index</welcome-file>
-                <flyway-locations>db/migration/update/mysql</flyway-locations>
+                <database-url>jdbc:mysql://localhost:3306/dev</database-url>
+                <database-driver-class-name>com.mysql.jdbc.Driver</database-driver-class-name>
+                <database-username>root</database-username>
+                <database-password>cirtaflow25</database-password>
+                <flyway-locations>classpath:db/migration/update/mysql</flyway-locations>
                 <flyway-user>root</flyway-user>
                 <flyway-password>cirtaflow25</flyway-password>
             </properties>
@@ -103,6 +109,10 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-cloud-connectors</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

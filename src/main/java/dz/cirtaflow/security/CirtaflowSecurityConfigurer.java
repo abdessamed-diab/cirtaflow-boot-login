@@ -24,8 +24,8 @@ public class CirtaflowSecurityConfigurer extends WebSecurityConfigurerAdapter{
     private static final Logger LOG = LogManager.getLogger(CirtaflowSecurityConfigurer.class);
 
     @Autowired(required = false)
-    @Qualifier("hikariDataSource")
-    private DataSource hikariDataSource;
+    @Qualifier("dataSource")
+    private DataSource dataSource;
 
     @Autowired
     private Environment env;
@@ -83,7 +83,7 @@ public class CirtaflowSecurityConfigurer extends WebSecurityConfigurerAdapter{
     @Profile(value = {"dev"})
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         if(env.acceptsProfiles("dev"))
-            auth.jdbcAuthentication().dataSource(hikariDataSource).
+            auth.jdbcAuthentication().dataSource(dataSource).
                     usersByUsernameQuery("select EMAIL_, pwd_, TRUE from ACT_ID_USER where EMAIL_ =?").
                     authoritiesByUsernameQuery("select EMAIL_, FIRST_ from ACT_ID_USER where EMAIL_=?").
                     passwordEncoder(PasswordEncoderFactories.createDelegatingPasswordEncoder());

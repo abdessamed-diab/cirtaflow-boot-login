@@ -79,13 +79,15 @@
 
         </form>
 
-        <form action="/facebook/email,user_about_me" method="get" autocomplete="off">
+        <form action="/facebook" method="get" >
 
             <div class="row" >
                 <div class="col-5 col-t-3 col-m-2"></div>
                 <div class="col-2 col-t-6 col-m-8">
-                    <input id="facebook" type="submit" class="ui-button ui-button-blue btn"
-                           value="LOGIN with Facebook"  />
+                    <input type="hidden" name="scope" value="email,user_about_me">
+                    <button id="facebook" type="submit" class="ui-button ui-button-blue btn">
+                        LOGIN with
+                    </button>
                 </div>
                 <div class="col-5 col-t-3 col-m-2"></div>
             </div>

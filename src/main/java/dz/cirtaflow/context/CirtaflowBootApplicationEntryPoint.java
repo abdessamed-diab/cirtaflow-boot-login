@@ -10,22 +10,18 @@ import org.activiti.spring.SpringProcessEngineConfiguration;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.flywaydb.core.Flyway;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
-import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.jdbc.DataSourceBuilder;
 import org.springframework.cloud.Cloud;
 import org.springframework.cloud.CloudFactory;
-import org.springframework.cloud.config.java.AbstractCloudConfig;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.Environment;
@@ -43,14 +39,13 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
-import java.io.Serializable;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Arrays;
 
 @EnableAutoConfiguration
-@ComponentScan(basePackages = {"dz.cirtaflow.web", "dz.cirtaflow.security"})
+@ComponentScan(basePackages = {"dz.cirtaflow.web", "dz.cirtaflow.security", "dz.cirtaflow.repositories"})
 @Configuration
 @ConfigurationProperties(prefix = "cirtaflow.datasource")
 @Data
@@ -151,7 +146,7 @@ public class CirtaflowBootApplicationEntryPoint implements WebMvcConfigurer{
             LOG.debug("init process engine configuration.");
             SpringProcessEngineConfiguration processEngineConfiguration= new SpringProcessEngineConfiguration();
             processEngineConfiguration.setDataSource(dataSource)
-                    .setAsyncExecutorActivate(true)
+                    .setAsyncExecutorActivate(false)
                     .setDatabaseSchemaUpdate("true");
 
             processEngineConfiguration.setTransactionManager(jdbcTransactionManager);

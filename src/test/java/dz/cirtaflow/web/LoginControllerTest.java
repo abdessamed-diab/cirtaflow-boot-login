@@ -80,5 +80,12 @@ public class LoginControllerTest implements Serializable{
                 .andExpect(view().name(this.welcomePage));
     }
 
+    @Test
+    @WithAnonymousUser
+    public void testGoToFacebookLoginPage() throws Exception {
+        LOG.debug("test go to facebook login page.");
+        this.mockMvc.perform(get("/facebook?scope=email,user_about-me").accept(MediaType.TEXT_HTML_VALUE))
+                .andExpect(status().isOk());
+    }
 
 }

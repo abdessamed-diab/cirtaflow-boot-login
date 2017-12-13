@@ -12,8 +12,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Optional;
 
-public interface ActivitiUserRepo extends Serializable{
-    Logger LOG= LogManager.getLogger(ActivitiUserRepo.class);
+public interface ActivitiIdentityServiceRepository extends Serializable{
+    Logger LOG= LogManager.getLogger(ActivitiIdentityServiceRepository.class);
     byte USERNAME_MAX_LENGTH= 7;
 
     default boolean CHECK_USER_ID(String idUser) throws IdentityException {

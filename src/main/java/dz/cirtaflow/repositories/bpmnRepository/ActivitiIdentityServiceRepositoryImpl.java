@@ -16,9 +16,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-@Repository(value = "activitiUserRepoImpl")
-public class ActivitiUserRepoImpl implements ActivitiUserRepo, DefaultSingletonBeanStructure{
-    private static final Logger LOG= LogManager.getLogger(ActivitiUserRepoImpl.class);
+@Repository(value = "activitiIdentityServiceRepositoryImpl")
+public class ActivitiIdentityServiceRepositoryImpl implements ActivitiIdentityServiceRepository, DefaultSingletonBeanStructure{
+    private static final Logger LOG= LogManager.getLogger(ActivitiIdentityServiceRepositoryImpl.class);
     private IdentityService identityService;
 
     @Autowired(required = true)

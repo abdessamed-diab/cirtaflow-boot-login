@@ -4,27 +4,37 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.Ordered;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
+import org.springframework.security.provisioning.JdbcUserDetailsManager;
 import org.springframework.security.web.access.channel.ChannelDecisionManager;
 import org.springframework.security.web.access.channel.ChannelDecisionManagerImpl;
 
 import javax.sql.DataSource;
 import java.util.Arrays;
 
-@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = true)
+//prePostEnabled caused me much more problems
+//lets as use secured against prePostEnabled
+@EnableGlobalMethodSecurity(securedEnabled = true, prePostEnabled = false)
 @Configuration
 public class CirtaflowSecurityConfigurer extends WebSecurityConfigurerAdapter{
     private static final Logger LOG = LogManager.getLogger(CirtaflowSecurityConfigurer.class);
 
-    @Autowired(required = false)
-    @Qualifier("dataSource")
+    @Autowired
     private DataSource dataSource;
 
     @Autowired
@@ -48,11 +58,11 @@ public class CirtaflowSecurityConfigurer extends WebSecurityConfigurerAdapter{
 
         http.authorizeRequests()
                     .antMatchers("/assets/**").permitAll()
+                    .antMatchers("/facebook/**").permitAll()
                     .antMatchers("/user/**").hasRole("USER")
                     .antMatchers("/admin/**").hasRole("ADMIN")
                     .antMatchers("/login").permitAll()
                     .antMatchers("/**").permitAll()
-                    .anyRequest().fullyAuthenticated()
                 .and()
                     .formLogin()
                     .loginPage("/login")
@@ -80,21 +90,26 @@ public class CirtaflowSecurityConfigurer extends WebSecurityConfigurerAdapter{
      * @throws Exception @see {@link java.sql.SQLException}, sql query can throw an exception.
      */
     @Override
-    @Profile(value = {"dev"})
+    @Profile(value = {"dev", "cloud"})
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        if(env.acceptsProfiles("dev"))
             auth.jdbcAuthentication().dataSource(dataSource).
-                    usersByUsernameQuery("select EMAIL_, pwd_, TRUE from ACT_ID_USER where EMAIL_ =?").
-                    authoritiesByUsernameQuery("select EMAIL_, FIRST_ from ACT_ID_USER where EMAIL_=?").
-                    passwordEncoder(PasswordEncoderFactories.createDelegatingPasswordEncoder());
-        else {
-            LOG.debug("**************************************************");
-            LOG.info("\t\t CURRENT PROFILE: "+ Arrays.asList(env.getActiveProfiles()).toString()+" UNAUTHORIZED.");
-            LOG.debug("**************************************************");
-        }
+                usersByUsernameQuery("select EMAIL_, pwd_, TRUE from ACT_ID_USER where EMAIL_ =?").
+                authoritiesByUsernameQuery("select EMAIL, AUTHORITY from CF_ACT_ID_USER_AUTHORITY where EMAIL=?").
+                passwordEncoder(PasswordEncoderFactories.createDelegatingPasswordEncoder());
     }
 
-
+    /**
+     * every new request {@link SecurityContextHolder} get cleared by the security context filter.
+     * this bean cams handy
+     * @param dataSource
+     * @return JdbcUserDetailsManager
+     */
+    @Bean
+    public JdbcUserDetailsManager jdbcUserDetailsManager(DataSource dataSource) {
+        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager();
+        jdbcUserDetailsManager.setDataSource(dataSource);
+        return jdbcUserDetailsManager;
+    }
 
 
 

@@ -1,0 +1,27 @@
+#first-div-element {
+    /*background-color: red;*/
+}
+
+#second-div-element {
+    /*background-color: green;*/
+}
+
+#third-div-element {
+    /*background-color: blue;*/
+}
+
+#forth-div-element {
+    /*background-color: yellow;*/
+}
+
+.profile-picture-div-element {
+    position: relative;
+    left: 42%;
+    top: -64px;
+    width: 0;
+    height: 0;
+}
+
+#profile-picture {
+    border: 3px solid black;
+}

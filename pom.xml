@@ -6,7 +6,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>dz.cirtaflow</groupId>
     <artifactId>cirtaflow-boot-login</artifactId>
-    <version>0.0.2-SNAPSHOT</version>
+    <version>0.0.3-SNAPSHOT</version>
     <name>cirtaflow-boot-login</name>
     <packaging>jar</packaging>
 
@@ -43,7 +43,7 @@
         <profile>
             <id>dev</id>
             <activation>
-                <activeByDefault>false</activeByDefault>
+                <activeByDefault>true</activeByDefault>
             </activation>
             <properties>
                 <profile-name>dev</profile-name>
@@ -57,11 +57,11 @@
         <profile>
             <id>cloud</id>
             <activation>
-                <activeByDefault>true</activeByDefault>
+                <activeByDefault>false</activeByDefault>
             </activation>
             <properties>
                 <profile-name>cloud</profile-name>
-                <source.folder>src/main/java/dz/cirtaflow</source.folder>
+                <source.folder>src/main/</source.folder>
                 <welcome-file>user/index</welcome-file>
                 <database-url>jdbc:mysql://localhost:3306/dev</database-url>
                 <database-driver-class-name>com.mysql.jdbc.Driver</database-driver-class-name>
@@ -323,6 +323,41 @@
                             <baselineOnMigrate>true</baselineOnMigrate>
                             <locations>${flyway-locations}</locations>
                         </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <groupId>com.github.eirslett</groupId>
+                <artifactId>frontend-maven-plugin</artifactId>
+                <version>1.2</version>
+                <configuration>
+                    <installDirectory>target</installDirectory>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>install node and npm</id>
+                        <goals>
+                            <goal>install-node-and-npm</goal>
+                        </goals>
+                        <configuration>
+                            <nodeVersion>v4.4.5</nodeVersion>
+                            <npmVersion>3.9.2</npmVersion>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>npm install</id>
+                        <goals>
+                            <goal>npm</goal>
+                        </goals>
+                        <configuration>
+                            <arguments>install</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>webpack build</id>
+                        <goals>
+                            <goal>webpack</goal>
+                        </goals>
                     </execution>
                 </executions>
             </plugin>

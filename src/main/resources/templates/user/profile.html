@@ -1,0 +1,40 @@
+<!DOCTYPE>
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8" />
+    <title>PROFILE</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="../../assets/css/defaultIndex.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/responsive.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/home.css" />
+    <link rel="stylesheet" type="text/css" href="../../assets/css/defaultLogin.css" />
+</head>
+
+<body bgcolor="#222">
+
+    <div id="login-toolbar" >
+    </div>
+
+    <div style="margin-top: 48px" class="row">
+        <div id="first-div-element" class="col-2 col-t-1">
+        </div>
+        <div id="second-div-element" class="col-7 col-t-8">
+            <img th:src="${coverPhoto}" width="100%" style="width: 100%; height: 256px; object-fit: cover" />
+
+            <div class="profile-picture-div-element">
+                <img id="profile-picture" th:src="${'data:image/jpeg;base64, '+profilePicture}" style="max-width: 128px; max-height: 128px"/>
+            </div>
+        </div>
+        <div id="third-div-element" class="col-1 col-t-1">
+        </div>
+        <div id="forth-div-element" class="col-2 col-t-2">
+            <h3 th:text="${email}">email address is:</h3>
+
+        </div>
+    </div>
+
+</body>
+
+</html>

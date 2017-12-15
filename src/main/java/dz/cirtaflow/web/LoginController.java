@@ -5,33 +5,18 @@ import dz.cirtaflow.repositories.bpmnJPARepository.AuthorityRepository;
 import dz.cirtaflow.repositories.bpmnRepository.ActivitiIdentityServiceRepository;
 import dz.cirtaflow.repositories.facebookRepository.FacebookRepository;
 import dz.cirtaflow.security.CirtaflowFacebookAuthentication;
-import dz.cirtaflow.security.CirtaflowSecurityConfigurer;
-import lombok.Data;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Required;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.AuthenticationManagerConfiguration;
-import org.springframework.boot.autoconfigure.security.SecurityAutoConfiguration;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.security.access.annotation.Secured;
-import org.springframework.security.access.prepost.PostAuthorize;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsChecker;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.provisioning.InMemoryUserDetailsManager;
-import org.springframework.security.provisioning.UserDetailsManager;
-import org.springframework.social.connect.UserProfile;
 import org.springframework.social.facebook.api.User;
 import org.springframework.social.facebook.api.UserOperations;
 import org.springframework.social.oauth2.OAuth2Parameters;
@@ -43,7 +28,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 
-import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.io.Serializable;
 import java.util.*;
 
@@ -66,9 +51,6 @@ public class LoginController implements Serializable{
 
     @Autowired
     private AuthorityRepository authorityRepository;
-
-    @Autowired
-    private CirtaflowSecurityConfigurer cirtaflowSecurityConfigurer;
 
     /**
      * read from properties file and set the value of welcome page.
@@ -177,23 +159,25 @@ public class LoginController implements Serializable{
      */
     @GetMapping("/facebook/index")
     @Secured("IS_AUTHENTICATED_ANONYMOUSLY")
-    public String authenticateFacebookUser(@RequestParam(name = "code") String code) {
+    public String authenticateFacebookUser(@RequestParam(name = "code") String code, HttpSession httpSession) {
         LOG.debug("**************************************************");
         LOG.debug("\t user is authenticated by facebook account."     );
         LOG.debug("**************************************************");
 
-        User facebookUserProfile = this.facebookRepository.getUserOperations(code, redirectUrl).getUserProfile();
+
+        UserOperations userOperations= this.facebookRepository.getUserOperations(code, redirectUrl);
+        User facebookUserProfile = userOperations.getUserProfile();
         Assert.notNull(facebookUserProfile, "user operations must not be null, see access token value...");
 
         if(StringUtils.isBlank(facebookUserProfile.getEmail())){
             LOG.info("we can't extract email address for user: "+facebookUserProfile.getFirstName());
-            return "login?error=4"; // cirtaflow app unable to read or extract your email address.
+            return "/login?error=4"; // cirtaflow app unable to read or extract your email address.
         }
 
         Optional<org.activiti.engine.identity.User> optionalActivitiUser= this.activitiIdentityServiceRepository.findByEmail(facebookUserProfile.getEmail());
         org.activiti.engine.identity.User activitiUser;
         if(!optionalActivitiUser.isPresent()) {
-            activitiUser = activitiIdentityServiceRepository.createNewUser(facebookUserProfile.getFirstName()+"."+facebookUserProfile.getLastName());
+            activitiUser = activitiIdentityServiceRepository.createNewUser(facebookUserProfile.getName());
             activitiUser.setPassword(activitiUser.getId()); // this will be changed after calling encryption method.
             activitiUser.setFirstName(facebookUserProfile.getFirstName());
             activitiUser.setLastName(facebookUserProfile.getLastName());
@@ -228,7 +212,24 @@ public class LoginController implements Serializable{
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        httpSession.setAttribute("userOperations", userOperations);
         return "redirect:/index";
+    }
+
+    @Secured("IS_AUTHENTICATED_FULLY")
+    @RequestMapping("/profile")
+    public ModelAndView goToProfile(HttpSession httpSession) {
+        Assert.notNull(httpSession.getAttribute("userOperations"), "there is no code in current session");
+        LOG.debug("go to profile.");
+        UserOperations userOperations= (UserOperations) httpSession.getAttribute("userOperations");
+        ModelAndView modelAndView= new ModelAndView("user/profile");
+        modelAndView.addObject("email", userOperations.getUserProfile().getEmail());
+        modelAndView.addObject("coverPhoto", userOperations.getUserProfile().getCover().getSource());
+
+        String base64= Base64.getEncoder().encodeToString(userOperations.getUserProfileImage());
+        modelAndView.addObject("profilePicture", base64);
+        return modelAndView;
     }
 
 

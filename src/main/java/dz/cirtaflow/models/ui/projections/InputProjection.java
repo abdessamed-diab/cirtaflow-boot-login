@@ -1,4 +1,4 @@
-package dz.cirtaflow.repositories.uiComponentJpaRepository.projections;
+package dz.cirtaflow.models.ui.projections;
 
 import dz.cirtaflow.models.ui.ButtonElement;
 import dz.cirtaflow.models.ui.Input;

@@ -4,11 +4,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 @Entity
-@Table(name = "CF_INPUT_EMAIL")
-@PrimaryKeyJoinColumn(name = "PK", foreignKey = @ForeignKey(name = "FK_INPUT_TEXT_INPUT_EMAIL"))
+@Table(name = "CF_INPUT_EMAIL", catalog = "activiti_cirtaflow_test")
+@PrimaryKeyJoinColumn(name = "PK")
 public class InputEmail extends InputText {
     private static final Logger LOG= LogManager.getLogger(InputEmail.class);
 

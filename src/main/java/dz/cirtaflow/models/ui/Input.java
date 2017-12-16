@@ -23,11 +23,11 @@ public class Input implements HtmlElement, FormElement {
 
     protected Long pk;
 
-    protected FormElement   formElement;
+    protected FormElement formElement;
 
-    protected Element       element= new ElementImpl();
+    protected Element element= new ElementImpl();
 
-    protected HtmlElement   htmlElement;
+    protected HtmlElement htmlElement;
 
     protected Map<String, EventListener> events;
 
@@ -508,7 +508,7 @@ public class Input implements HtmlElement, FormElement {
     }
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = {CascadeType.REFRESH, CascadeType.DETACH, CascadeType.MERGE})
-    @JoinColumn(name = "VIEW_ID", insertable = true, updatable = true, unique = false, nullable = true, referencedColumnName = "ID", foreignKey = @ForeignKey(name = "FK_VIEW_INPUT"))
+    @JoinColumn(name = "VIEW_ID", insertable = true, updatable = true, unique = false, nullable = true, referencedColumnName = "ID")
     public View getViewId() {
         return viewId;
     }

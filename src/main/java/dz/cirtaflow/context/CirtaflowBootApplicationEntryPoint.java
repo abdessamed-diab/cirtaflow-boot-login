@@ -216,11 +216,10 @@ public class CirtaflowBootApplicationEntryPoint implements WebMvcConfigurer{
     @Configuration
     @Data
     @EnableJpaRepositories(
-            basePackages                = {"dz.cirtaflow.repositories"},
+            basePackages                = "dz.cirtaflow.repositories.*",
             considerNestedRepositories  = false,
             entityManagerFactoryRef     = "entityManagerFactoryBean",
-            transactionManagerRef       = "jpaTransactionManager",
-            queryLookupStrategy         = QueryLookupStrategy.Key.CREATE_IF_NOT_FOUND)
+            transactionManagerRef       = "jpaTransactionManager")
     protected static class JpaConfigurer{
         private DataSource dataSource;
         private String packageToScan= "dz.cirtaflow.models";

@@ -1,27 +1,29 @@
+var webpack = require('webpack');
 var path = require('path');
 
-var node_dir = __dirname + '/node_modules';
+var BUILD_DIR = path.resolve(__dirname, 'src/main/resources/public/build');
+var APP_DIR = path.resolve(__dirname, 'src/main/js');
 
-module.exports = {
-    entry: './src/main/js/app.js',
-    devtool: 'sourcemaps',
-    cache: true,
-    debug: true,
+var config = {
+    entry: APP_DIR + '/app.jsx',
     output: {
-        path: __dirname,
-        filename: './src/main/resources/public/built/bundle.js'
+        path: BUILD_DIR,
+        filename: 'bundle.js'
     },
-    module: {
-        loaders: [
+    module : {
+        loaders : [
             {
-                test: path.join(__dirname, '.'),
-                exclude: /(node_modules)/,
-                loader: 'babel-loader',
-                query: {
-                    cacheDirectory: true,
-                    presets: ['es2015', 'react']
+                test : /\.jsx?/,
+                include : APP_DIR,
+                use: {
+                    loader: 'babel-loader',
+                    options: {
+                        presets: ["es2015", "react"]
+                    }
                 }
             }
         ]
     }
 };
+
+module.exports = config;

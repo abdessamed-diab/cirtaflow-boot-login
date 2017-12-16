@@ -5,11 +5,14 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 @Entity
-@Table(name = "CF_INPUT_PASSWORD")
-@PrimaryKeyJoinColumn(name = "PK", foreignKey = @ForeignKey(name = "FK_INPUT_TEXT_INPUT_PASS"))
+@Table(name = "CF_INPUT_PASSWORD", catalog = "activiti_cirtaflow_test")
+@PrimaryKeyJoinColumn(name = "PK")
 public class InputPassword extends InputText {
     private static final Logger LOG= LogManager.getLogger(InputPassword.class);
 

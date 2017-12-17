@@ -1,10 +1,5 @@
 package dz.cirtaflow.models.cirtaflow;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.springframework.social.facebook.api.FacebookObject;
-import org.springframework.social.facebook.api.User;
-import org.springframework.util.SerializationUtils;
-
 import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
@@ -12,18 +7,16 @@ import java.util.Locale;
 
 @Entity(name = "PROFILE")
 @Table(name = "CF_PROFILE")
-@Embeddable
-public class Profile extends FacebookObject implements Serializable{
+public class Profile implements Serializable{
     private String id;
     private String name;
     private String firstName;
     private String lastName;
     private String gender;
     private Locale locale;
-    private List<Profile> friendList;
-    private User fcUser;
-    private byte[] fcUserAsByteArray;
     private byte[] profilePicture;
+    private List<Friend> friendList;
+    private Friend friendProfile;
 
     public Profile() {
     }
@@ -47,7 +40,7 @@ public class Profile extends FacebookObject implements Serializable{
         this.id = id;
     }
 
-    @Column(unique = true, nullable = false, insertable = true, updatable = true, name = "NAME")
+    @Column(unique = false, nullable = false, insertable = true, updatable = true, name = "NAME")
     public String getName() {
         return name;
     }
@@ -92,44 +85,6 @@ public class Profile extends FacebookObject implements Serializable{
         this.locale = locale;
     }
 
-    /**
-     * we put Embedded annotation just to make sure that hibernate will create for us FKs automatically.
-     * @return list of friend profiles.
-     */
-    @Embedded
-    @ElementCollection(fetch = FetchType.EAGER, targetClass = Profile.class)
-    public List<Profile> getFriendList() {
-        return  friendList;
-    }
-
-    public void setFriendList(List<Profile> friendList) {
-        this.friendList = friendList;
-    }
-
-    /**
-     * we dont need to export this field since we already did the conversion.
-     * @return byte[] array
-     */
-    @JsonIgnore
-    @Lob
-    @Column(unique = true, nullable = true, insertable = true, updatable = true, name = "FC_USER_AS_BYTES", length = Integer.MAX_VALUE)
-    public byte[] getFcUserAsByteArray() {
-        return fcUserAsByteArray;
-    }
-
-    public void setFcUserAsByteArray(byte[] fcUserAsByteArray) {
-        this.fcUserAsByteArray = fcUserAsByteArray;
-    }
-
-    @Transient
-    public User getFcUser() {
-        return this.fcUser = (User) SerializationUtils.deserialize(this.fcUserAsByteArray);
-    }
-
-    public void setFcUser(User fcUser) {
-        this.fcUser = fcUser;
-        this.fcUserAsByteArray = SerializationUtils.serialize(fcUser);
-    }
 
     @Lob
     @Column(name = "PROFILE_PICTURE", length = Integer.MAX_VALUE, updatable = true, insertable = true, nullable = true, unique = false)
@@ -139,5 +94,23 @@ public class Profile extends FacebookObject implements Serializable{
 
     public void setProfilePicture(byte[] profilePicture) {
         this.profilePicture = profilePicture;
+    }
+
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "profile", targetEntity = Friend.class, orphanRemoval = false)
+    public List<Friend> getFriendList() {
+        return friendList;
+    }
+
+    public void setFriendList(List<Friend> friendList) {
+        this.friendList = friendList;
+    }
+
+    @OneToOne(mappedBy = "friendProfile", fetch = FetchType.LAZY)
+    public Friend getFriendProfile() {
+        return friendProfile;
+    }
+
+    public void setFriendProfile(Friend friendProfile) {
+        this.friendProfile = friendProfile;
     }
 }

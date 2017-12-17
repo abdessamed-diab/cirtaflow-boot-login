@@ -1,15 +1,22 @@
 package dz.cirtaflow.web;
 
 import dz.cirtaflow.models.act.CfActIdUserAuthority;
+import dz.cirtaflow.models.cirtaflow.Friend;
+import dz.cirtaflow.models.cirtaflow.Profile;
 import dz.cirtaflow.repositories.bpmnJPARepository.AuthorityRepository;
+import dz.cirtaflow.repositories.bpmnJPARepository.FriendProfileRepository;
+import dz.cirtaflow.repositories.bpmnJPARepository.ProfileRepository;
 import dz.cirtaflow.repositories.bpmnRepository.ActivitiIdentityServiceRepository;
 import dz.cirtaflow.repositories.facebookRepository.FacebookRepository;
 import dz.cirtaflow.security.CirtaflowFacebookAuthentication;
+import org.activiti.engine.identity.Picture;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -19,6 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.social.facebook.api.User;
 import org.springframework.social.facebook.api.UserOperations;
+import org.springframework.social.facebook.api.impl.FacebookTemplate;
 import org.springframework.social.oauth2.OAuth2Parameters;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -37,7 +45,7 @@ import java.util.*;
  * @Author DIAB-ABDESSAMED
  */
 @Controller(value = "loginController")
-public class LoginController implements Serializable{
+public class LoginController implements Serializable, InitializingBean{
     private static final Logger LOG= LogManager.getLogger(LoginController.class);
 
     @Value("${cirtaflow.facebook.redirect-url}")
@@ -52,12 +60,27 @@ public class LoginController implements Serializable{
     @Autowired
     private AuthorityRepository authorityRepository;
 
+    @Autowired
+    private ProfileRepository profileRepository;
+
+    @Autowired
+    private FriendProfileRepository friendProfileRepository;
+
     /**
      * read from properties file and set the value of welcome page.
      * cirtaflow project has it s own welcome page acts like the stater entry point for the end user.
      */
     @Value("${cirtaflow.welcome-page}")
     private String welcomePage;
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        LOG.debug("init LoginHelper static class ");
+        LoginHelper.setActivitiIdentityServiceRepository(this.activitiIdentityServiceRepository);
+        LoginHelper.setAuthorityRepository(this.authorityRepository);
+        LoginHelper.setProfileRepository(this.profileRepository);
+        LoginHelper.setFriendProfileRepository(this.friendProfileRepository);
+    }
 
     /**
      * default constructor
@@ -160,13 +183,10 @@ public class LoginController implements Serializable{
     @GetMapping("/facebook/index")
     @Secured("IS_AUTHENTICATED_ANONYMOUSLY")
     public String authenticateFacebookUser(@RequestParam(name = "code") String code, HttpSession httpSession) {
-        LOG.debug("**************************************************");
-        LOG.debug("\t user is authenticated by facebook account."     );
-        LOG.debug("**************************************************");
 
 
-        UserOperations userOperations= this.facebookRepository.getUserOperations(code, redirectUrl);
-        User facebookUserProfile = userOperations.getUserProfile();
+        FacebookTemplate facebookTemplate = this.facebookRepository.getFacebookTemplate(code, redirectUrl);
+        User facebookUserProfile = facebookTemplate.userOperations().getUserProfile();
         Assert.notNull(facebookUserProfile, "user operations must not be null, see access token value...");
 
         if(StringUtils.isBlank(facebookUserProfile.getEmail())){
@@ -176,44 +196,21 @@ public class LoginController implements Serializable{
 
         Optional<org.activiti.engine.identity.User> optionalActivitiUser= this.activitiIdentityServiceRepository.findByEmail(facebookUserProfile.getEmail());
         org.activiti.engine.identity.User activitiUser;
+        String authority;
+
         if(!optionalActivitiUser.isPresent()) {
-            activitiUser = activitiIdentityServiceRepository.createNewUser(facebookUserProfile.getName());
-            activitiUser.setPassword(activitiUser.getId()); // this will be changed after calling encryption method.
-            activitiUser.setFirstName(facebookUserProfile.getFirstName());
-            activitiUser.setLastName(facebookUserProfile.getLastName());
-            activitiUser.setEmail(facebookUserProfile.getEmail());
-            activitiUser.setPassword(
-                    ENCRYPT_PASSWORD(activitiUser)
-            );
-            activitiUser = activitiIdentityServiceRepository.saveUser(activitiUser);
-            this.authorityRepository.save(new CfActIdUserAuthority("USER", activitiUser.getEmail()));
-            LOG.debug("**************************************************");
-            LOG.debug("\t\t add new activiti user to database.");
-            LOG.debug("**************************************************");
-        }else
-            activitiUser= optionalActivitiUser.get();
+            activitiUser = LoginHelper.CONVERT_AND_SAVE_ACTIVITI_USER(facebookUserProfile);
+            authority    = LoginHelper.ASSOCIATE_AUTHORITY_FOR_GIVEN_ACTIVITI_USER(facebookUserProfile.getEmail()).getAuthority();
+        }else {
+            activitiUser = optionalActivitiUser.get();
+            authority    =  this.authorityRepository.findByEmail(activitiUser.getEmail()).get().getAuthority();
+        }
 
-        String authority = this.authorityRepository.findByEmail(activitiUser.getEmail()).get().getAuthority();
-        List<GrantedAuthority> authorities= new ArrayList<>();
-        Arrays.asList(authority.split(",")).forEach(auth -> {
-            authorities.add(new GrantedAuthority() {
-                @Override
-                public String getAuthority() {
-                    return auth;
-                }
-            });
-        });
-        CirtaflowFacebookAuthentication authentication= new CirtaflowFacebookAuthentication(
-                authorities,
-                org.springframework.security.core.userdetails.User.withUsername(activitiUser.getId())
-                        .password(activitiUser.getPassword())
-                        .authorities(authorities)
-                        .build()
-        );
+        LoginHelper.SET_ACTIVITI_USER_PICTURE(activitiUser , facebookTemplate.userOperations().getUserProfileImage());
+        LoginHelper.ADD_PROFILE_USING_FACEBOOK_PROFILE(activitiUser, facebookUserProfile, facebookTemplate.friendOperations().getFriendProfiles()  );
+        LoginHelper.DO_AUTHENTICATE_NEW_USER(activitiUser , authority);
 
-        SecurityContextHolder.getContext().setAuthentication(authentication);
-
-        httpSession.setAttribute("userOperations", userOperations);
+        httpSession.setAttribute("userOperations", facebookTemplate.userOperations());
         return "redirect:/index";
     }
 
@@ -225,7 +222,9 @@ public class LoginController implements Serializable{
         UserOperations userOperations= (UserOperations) httpSession.getAttribute("userOperations");
         ModelAndView modelAndView= new ModelAndView("user/profile");
         modelAndView.addObject("email", userOperations.getUserProfile().getEmail());
-        modelAndView.addObject("coverPhoto", userOperations.getUserProfile().getCover().getSource());
+
+        if(userOperations.getUserProfile().getCover() != null)
+            modelAndView.addObject("coverPhoto", userOperations.getUserProfile().getCover().getSource());
 
         String base64= Base64.getEncoder().encodeToString(userOperations.getUserProfileImage());
         modelAndView.addObject("profilePicture", base64);
@@ -243,6 +242,126 @@ public class LoginController implements Serializable{
                 .credentialsExpired(false)
                 .build()
                 .getPassword();
+    }
+
+
+    private final static class LoginHelper {
+        private static ActivitiIdentityServiceRepository ACTIVITI_IDENTITY_SERVICE_REPOSITORY;
+        private static AuthorityRepository AUTHORITY_REPOSITORY;
+        private static ProfileRepository PROFILE_REPOSITORY;
+        private static FriendProfileRepository FRIEND_PROFILE_REPOSITORY;
+        private LoginHelper() {
+        }
+
+         static org.activiti.engine.identity.User CONVERT_TO_ACTIVITI_USER(User facebookUserProfile) {
+            org.activiti.engine.identity.User activitiUser = ACTIVITI_IDENTITY_SERVICE_REPOSITORY.createNewUser(facebookUserProfile.getId());
+            Assert.notNull(activitiUser, "activiti identity service can not create new user. perhaps given user already exists in the system");
+            activitiUser.setPassword(facebookUserProfile.getFirstName()+"."+facebookUserProfile.getLastName()); // this will be changed after calling encryption method.
+            activitiUser.setFirstName(facebookUserProfile.getFirstName());
+            activitiUser.setLastName(facebookUserProfile.getLastName());
+            activitiUser.setEmail(facebookUserProfile.getEmail());
+            activitiUser.setPassword(
+                    ENCRYPT_PASSWORD(activitiUser)
+            );
+
+            LOG.debug("**************************************************");
+            LOG.debug("\t\t add new activiti user to database.");
+            LOG.debug("**************************************************");
+            return activitiUser;
+        }
+
+         static org.activiti.engine.identity.User CONVERT_AND_SAVE_ACTIVITI_USER(@NonNull User facebookUserProfile) {
+            org.activiti.engine.identity.User activitiUser = CONVERT_TO_ACTIVITI_USER(facebookUserProfile);
+            activitiUser = ACTIVITI_IDENTITY_SERVICE_REPOSITORY.saveUser(activitiUser);
+            return activitiUser;
+        }
+
+        static boolean ASSOCIATE_AUTHORITY_FOR_GIVEN_ACTIVITI_USER(@NonNull  org.activiti.engine.identity.User activitiUser) {
+            Assert.notNull(activitiUser.getEmail(), "email address should not be null.");
+            return AUTHORITY_REPOSITORY.save(
+                    new CfActIdUserAuthority("USER", activitiUser.getEmail()    )
+            ).getId() != null;
+        }
+
+        static CfActIdUserAuthority ASSOCIATE_AUTHORITY_FOR_GIVEN_ACTIVITI_USER(@NonNull String email) {
+            return AUTHORITY_REPOSITORY.save(
+                    new CfActIdUserAuthority("USER", email    )
+            );
+        }
+
+        static void DO_AUTHENTICATE_NEW_USER(org.activiti.engine.identity.User activitiUser, String authority) {
+            List<GrantedAuthority> authorities= new ArrayList<>();
+            Arrays.asList(authority.split(",")).forEach(auth -> {
+                authorities.add(new GrantedAuthority() {
+                    @Override
+                    public String getAuthority() {
+                        return auth;
+                    }
+                });
+            });
+            CirtaflowFacebookAuthentication authentication= new CirtaflowFacebookAuthentication(
+                    authorities,
+                    org.springframework.security.core.userdetails.User.withUsername(activitiUser.getId())
+                            .password(activitiUser.getPassword())
+                            .authorities(authorities)
+                            .build()
+            );
+
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+        }
+
+        static void SET_ACTIVITI_USER_PICTURE(org.activiti.engine.identity.User activitiUser, byte[] imageAsByteArray) {
+            Picture activitiUserPicture = new Picture( imageAsByteArray , "jpg");
+            ACTIVITI_IDENTITY_SERVICE_REPOSITORY.setUserPicture(activitiUser.getId() , activitiUserPicture);
+        }
+
+//        this will update every relation
+        static void ADD_PROFILE_USING_FACEBOOK_PROFILE(org.activiti.engine.identity.User activitiUser, User facebookUserProfile, List<User> friendList) {
+
+            final Profile profile = new Profile(activitiUser.getId() , facebookUserProfile.getName(),
+                    facebookUserProfile.getFirstName() , facebookUserProfile.getLastName(), facebookUserProfile.getGender() , facebookUserProfile.getLocale());
+
+            Picture activitiUserPicture = ACTIVITI_IDENTITY_SERVICE_REPOSITORY.getUserPicture(activitiUser.getId());
+            if(activitiUserPicture != null )
+                profile.setProfilePicture(activitiUserPicture.getBytes());
+            PROFILE_REPOSITORY.save(profile);
+
+            friendList.stream().forEach(user -> {
+                Profile friendProfile = null;
+                Friend friend = new Friend(profile ,
+                        friendProfile = new Profile(user.getId(), user.getName(), user.getFirstName(), user.getLastName(), user.getGender(), user.getLocale())
+                );
+
+                // add last uploaded picture.
+                Picture picture = ACTIVITI_IDENTITY_SERVICE_REPOSITORY.getUserPicture(user.getId());
+                if(picture != null)
+                    friendProfile.setProfilePicture(picture.getBytes());
+                PROFILE_REPOSITORY.save(friendProfile); // just an update
+
+                friend.setStatus(user.getAbout());
+                if(!FRIEND_PROFILE_REPOSITORY.findByProfileAndFriendProfile(profile , friendProfile).isPresent()) {
+                    FRIEND_PROFILE_REPOSITORY.save(friend);
+                }
+
+            });
+
+        }
+
+        public static void setActivitiIdentityServiceRepository(ActivitiIdentityServiceRepository activitiIdentityServiceRepository) {
+            ACTIVITI_IDENTITY_SERVICE_REPOSITORY = activitiIdentityServiceRepository;
+        }
+
+        public static void setAuthorityRepository(AuthorityRepository authorityRepository) {
+            AUTHORITY_REPOSITORY = authorityRepository;
+        }
+
+        public static void setProfileRepository(ProfileRepository profileRepository) {
+            PROFILE_REPOSITORY = profileRepository;
+        }
+
+        public static void setFriendProfileRepository(FriendProfileRepository friendProfileRepository) {
+            FRIEND_PROFILE_REPOSITORY = friendProfileRepository;
+        }
     }
 
 

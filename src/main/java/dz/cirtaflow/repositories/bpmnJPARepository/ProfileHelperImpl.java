@@ -29,13 +29,13 @@ public class ProfileHelperImpl implements ProfileHelper {
             UserDetails principal= (UserDetails) authentication.getPrincipal();
             profileName = principal.getName();
             optionalProfile= Optional.of(
-                    (Profile) entityManager.createQuery("SELECT P FROM PROFILE P WHERE P.name ='"+profileName+"'").getSingleResult()
+                    (Profile) entityManager.createQuery("SELECT P FROM PROFILE P WHERE P.id ='"+profileName+"'").getSingleResult()
             );
         } catch (ClassCastException ex) {
             LOG.error(ex);
 //            just for testing we hardcoded the profile name.
             optionalProfile= Optional.of(
-                    (Profile) entityManager.createQuery("SELECT P FROM PROFILE P WHERE P.name ='Abdou.Diab'").getSingleResult()
+                    (Profile) entityManager.createQuery("SELECT P FROM PROFILE P WHERE P.id ='Abdou.Diab'").getSingleResult()
             );
         }
 

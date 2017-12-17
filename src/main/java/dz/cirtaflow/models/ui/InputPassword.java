@@ -11,7 +11,7 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "CF_INPUT_PASSWORD", catalog = "activiti_cirtaflow_test")
+@Table(name = "CF_INPUT_PASSWORD")
 @PrimaryKeyJoinColumn(name = "PK")
 public class InputPassword extends InputText {
     private static final Logger LOG= LogManager.getLogger(InputPassword.class);

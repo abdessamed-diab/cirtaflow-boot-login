@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.lang.NonNull;
+import org.springframework.social.facebook.api.FriendOperations;
 import org.springframework.social.facebook.api.UserOperations;
 import org.springframework.social.facebook.api.impl.FacebookTemplate;
 import org.springframework.social.facebook.connect.FacebookConnectionFactory;
@@ -56,6 +57,11 @@ public class FacebookRepository implements Serializable, InitializingBean{
                 buildAuthenticateUrl(GrantType.AUTHORIZATION_CODE, params);
 
         return authenticatedUrl;
+    }
+
+    public FacebookTemplate getFacebookTemplate(@NonNull String code, String redirectUrl) {
+        AccessGrant accessGrant = this.facebookConnectionFactory.getOAuthOperations().exchangeForAccess(code, redirectUrl, null);
+        return new FacebookTemplate(accessGrant.getAccessToken(), this.appNamespace);
     }
 
     public UserOperations getUserOperations(@NonNull String code, String redirectUrl) {

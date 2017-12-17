@@ -10,7 +10,7 @@ import javax.persistence.PrimaryKeyJoinColumn;
 import javax.persistence.Table;
 
 @Entity
-@Table(name = "CF_INPUT_EMAIL", catalog = "activiti_cirtaflow_test")
+@Table(name = "CF_INPUT_EMAIL")
 @PrimaryKeyJoinColumn(name = "PK")
 public class InputEmail extends InputText {
     private static final Logger LOG= LogManager.getLogger(InputEmail.class);

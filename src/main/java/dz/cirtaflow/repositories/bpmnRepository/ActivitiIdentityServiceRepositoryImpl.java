@@ -1,6 +1,7 @@
 package dz.cirtaflow.repositories.bpmnRepository;
 
 import dz.cirtaflow.context.DefaultSingletonBeanStructure;
+import org.activiti.engine.ActivitiObjectNotFoundException;
 import org.activiti.engine.IdentityService;
 import org.activiti.engine.ProcessEngine;
 import org.activiti.engine.identity.Picture;
@@ -63,8 +64,13 @@ public class ActivitiIdentityServiceRepositoryImpl implements ActivitiIdentitySe
 
     @Override
     public Picture getUserPicture(@NonNull String userId) {
-        if(CHECK_USER_ID(userId))
-            return this.identityService.getUserPicture(userId);
+        if (CHECK_USER_ID(userId))
+            try {
+                return this.identityService.getUserPicture(userId);
+            } catch (ActivitiObjectNotFoundException ex) {
+                LOG.warn(userId + " doesn't exist.");
+            }
+
         return null;
     }
 

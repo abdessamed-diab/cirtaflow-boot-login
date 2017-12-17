@@ -14,7 +14,7 @@ import java.io.Serializable;
 import java.util.List;
 
 @Entity
-@Table(name = "CF_VIEW", schema = "activiti_cirtaflow_test")
+@Table(name = "CF_VIEW")
 public class View implements Serializable, FormElement {
     private static final Logger LOG= LogManager.getLogger(View.class);
 
